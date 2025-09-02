@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: claude-legal-agent
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python legal-agent-api.py"
+    envVars:
+      - key: CLAUDE_CODE_USE_OAUTH
+        value: "true"
+      - key: PORT
+        value: "10000"
