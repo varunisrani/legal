@@ -66,10 +66,9 @@ Be thorough, professional, and cite relevant legal principles when applicable.`;
       
       // Stream and collect response
       for await (const message of messages) {
-        if (message.type === 'assistant') {
-          responseContent += message.content || '';
-        } else if (message.type === 'result') {
-          // Final result received, break the loop
+        if (message.type === 'result') {
+          // Final result received with the complete response
+          responseContent = (message as any).result || '';
           break;
         }
       }
