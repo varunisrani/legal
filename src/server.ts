@@ -9,8 +9,15 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { query } from '@anthropic-ai/claude-code';
 
-// Load environment variables
-require('dotenv').config();
+// Load environment variables for local development only
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    require('dotenv').config();
+    console.log('✅ Local .env file loaded');
+  } catch (error) {
+    console.log('ℹ️  No .env file found, using system environment variables');
+  }
+}
 
 interface LegalQueryRequest {
   query: string;
