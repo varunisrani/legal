@@ -80,14 +80,14 @@ Be thorough, professional, and cite relevant legal principles when applicable.`;
         throw new Error('Claude OAuth token not configured. Please set CLAUDE_OAUTH_TOKEN in environment variables.');
       }
 
-      // Use Claude Code SDK with OAuth token
-      // Note: OAuth token should be configured via Claude CLI authentication
-      // The SDK will automatically use authenticated credentials
+      // Use Claude Code SDK with bypass permissions for server deployment
+      // This allows the server to use the OAuth token without interactive login
       const messages = query({
         prompt: userPrompt,
         options: {
           maxTurns: request.maxTurns || 2,
-          model: 'claude-3-5-sonnet-20241022' // Latest Claude model
+          model: 'claude-3-5-sonnet-20241022', // Latest Claude model
+          permissionMode: 'bypassPermissions' // Allow server-side execution
         }
       });
 
