@@ -8,10 +8,9 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { query } from '@anthropic-ai/claude-code';
-import dotenv from 'dotenv';
 
 // Load environment variables
-dotenv.config();
+require('dotenv').config();
 
 interface LegalQueryRequest {
   query: string;
