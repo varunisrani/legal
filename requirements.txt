@@ -1,6 +1,6 @@
 fastapi
 uvicorn
 pydantic
-claude-code-sdk
+anthropic
 requests
 python-multipart

@@ -2,12 +2,8 @@ services:
   - type: web
     name: claude-legal-agent
     env: python
-    buildCommand: "chmod +x install-claude.sh && ./install-claude.sh && pip install -r requirements.txt"
-    startCommand: "python legal-agent-api.py"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python legal-agent-api-final.py"
     envVars:
-      - key: CLAUDE_CODE_USE_OAUTH
-        value: "true"
       - key: PORT
         value: "10000"
-      - key: PATH
-        value: "$PATH:$HOME/.nvm/versions/node/v20.15.1/bin"
