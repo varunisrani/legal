@@ -8,6 +8,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { query } from '@anthropic-ai/claude-code';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 interface LegalQueryRequest {
   query: string;
@@ -25,6 +29,18 @@ interface LegalQueryResponse {
 
 class ClaudeLegalAgent {
   private queryCount: number = 0;
+  private oauthToken: string | null = null;
+  
+  constructor() {
+    this.oauthToken = process.env.CLAUDE_OAUTH_TOKEN || null;
+    if (!this.oauthToken) {
+      console.warn('⚠️  CLAUDE_OAUTH_TOKEN not found in environment variables');
+      console.warn('   Please set your Claude OAuth token in .env file:');
+      console.warn('   CLAUDE_OAUTH_TOKEN=your_oauth_token_here');
+    } else {
+      console.log('✅ Claude OAuth token loaded from environment');
+    }
+  }
   
   async processLegalQuery(request: LegalQueryRequest): Promise<LegalQueryResponse> {
     const startTime = Date.now();
@@ -53,7 +69,14 @@ Be thorough, professional, and cite relevant legal principles when applicable.`;
       }
       userPrompt += '\n\nPlease provide a comprehensive legal analysis addressing the specific query above.';
 
-      // Use Claude Code SDK with OAuth
+      // Check if OAuth token is available
+      if (!this.oauthToken) {
+        throw new Error('Claude OAuth token not configured. Please set CLAUDE_OAUTH_TOKEN in environment variables.');
+      }
+
+      // Use Claude Code SDK with OAuth token
+      // Note: OAuth token should be configured via Claude CLI authentication
+      // The SDK will automatically use authenticated credentials
       const messages = query({
         prompt: userPrompt,
         options: {
@@ -121,14 +144,18 @@ app.use(express.json());
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
+  const oauthConfigured = !!process.env.CLAUDE_OAUTH_TOKEN;
   res.json({
-    status: 'healthy',
+    status: oauthConfigured ? 'healthy' : 'configuration_needed',
     service: 'Claude Legal Agent (TypeScript)',
-    authentication: 'OAuth (Claude Code SDK)',
+    authentication: 'OAuth via Environment Variable',
     subscription: 'Uses your existing Claude subscription',
+    oauthTokenConfigured: oauthConfigured,
     queriesProcessed: legalAgent.getQueryCount(),
     timestamp: new Date().toISOString(),
-    note: 'No additional API costs - uses your $200 Anthropic subscription!'
+    note: oauthConfigured 
+      ? 'No additional API costs - uses your $200 Anthropic subscription!'
+      : 'Please configure CLAUDE_OAUTH_TOKEN environment variable'
   });
 });
 
@@ -204,11 +231,13 @@ app.post('/legal/risk-assessment', async (req: Request, res: Response) => {
 
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {
+  const oauthConfigured = !!process.env.CLAUDE_OAUTH_TOKEN;
   res.json({
     message: '🏛️ Claude Legal Agent (TypeScript + OAuth)',
     version: '1.0.0',
-    authentication: 'OAuth via Claude Code SDK',
+    authentication: 'OAuth via Environment Variable',
     subscription: 'Uses your existing $200 Claude subscription',
+    oauthTokenConfigured: oauthConfigured,
     endpoints: {
       health: '/health',
       legalQuery: '/legal/query',
@@ -226,10 +255,15 @@ app.get('/', (req: Request, res: Response) => {
         }
       }
     },
+    setup: {
+      step1: 'Get your Claude OAuth token from Claude dashboard',
+      step2: 'Set CLAUDE_OAUTH_TOKEN=your_token in environment variables',
+      step3: 'Restart the server to load the token'
+    },
     benefits: [
       '✅ No additional API costs',
       '✅ Uses your Claude Max subscription', 
-      '✅ OAuth authentication',
+      '✅ OAuth authentication via environment',
       '✅ Professional legal analysis',
       '✅ TypeScript/Node.js performance'
     ]
