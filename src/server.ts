@@ -5,7 +5,7 @@
  * Perfect for your $200 Anthropic subscription - no additional API costs!
  */
 
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { query } from '@anthropic-ai/claude-code';
 
@@ -58,7 +58,6 @@ Be thorough, professional, and cite relevant legal principles when applicable.`;
         prompt: userPrompt,
         options: {
           maxTurns: request.maxTurns || 2,
-          systemPrompt: systemPrompt,
           model: 'claude-3-5-sonnet-20241022' // Latest Claude model
         }
       });
@@ -67,13 +66,10 @@ Be thorough, professional, and cite relevant legal principles when applicable.`;
       
       // Stream and collect response
       for await (const message of messages) {
-        if (message.type === 'content') {
-          responseContent += message.content;
+        if (message.type === 'assistant') {
+          responseContent += message.content || '';
         } else if (message.type === 'result') {
-          // Final result received
-          if (message.result) {
-            responseContent = message.result;
-          }
+          // Final result received, break the loop
           break;
         }
       }
@@ -125,7 +121,7 @@ app.use(cors());
 app.use(express.json());
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     service: 'Claude Legal Agent (TypeScript)',
@@ -138,7 +134,7 @@ app.get('/health', (req, res) => {
 });
 
 // Legal query endpoint
-app.post('/legal/query', async (req, res) => {
+app.post('/legal/query', async (req: Request, res: Response) => {
   try {
     const request: LegalQueryRequest = req.body;
     
@@ -162,7 +158,7 @@ app.post('/legal/query', async (req, res) => {
 });
 
 // Contract review endpoint
-app.post('/legal/contract-review', async (req, res) => {
+app.post('/legal/contract-review', async (req: Request, res: Response) => {
   try {
     const request: LegalQueryRequest = req.body;
     
@@ -185,7 +181,7 @@ app.post('/legal/contract-review', async (req, res) => {
 });
 
 // Risk assessment endpoint  
-app.post('/legal/risk-assessment', async (req, res) => {
+app.post('/legal/risk-assessment', async (req: Request, res: Response) => {
   try {
     const request: LegalQueryRequest = req.body;
     
@@ -208,7 +204,7 @@ app.post('/legal/risk-assessment', async (req, res) => {
 });
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.json({
     message: '🏛️ Claude Legal Agent (TypeScript + OAuth)',
     version: '1.0.0',
@@ -242,7 +238,7 @@ app.get('/', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('Server error:', err);
   res.status(500).json({
     error: 'Internal server error',
